@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>気象庁 天気予報</title>
+</head>
+<body>
+  <h1>天気予報（気象庁API）</h1>
+
+  <select id="areaSelect"></select>
+  <button onclick="getWeather()">天気を見る</button>
+
+  <pre id="result"></pre>
+
+  <script>
+    const areaSelect = document.getElementById("areaSelect");
+
+    // ① 地域一覧を取得してプルダウン生成
+    async function loadAreas() {
+      const url = "https://www.jma.go.jp/bosai/common/const/area.json";
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // offices（地方気象台単位）を使用
+      const offices = data.offices;
+
+      for (const code in offices) {
+        const option = document.createElement("option");
+        option.value = code;
+        option.textContent = offices[code].name;
+        areaSelect.appendChild(option);
+      }
+    }
+
+    // ② 天気予報取得
+    async function getWeather() {
+      const areaCode = areaSelect.value;
+      const areaName =
+        areaSelect.selectedOptions[0].text;
+
+      const url =
+        `https://www.jma.go.jp/bosai/forecast/data/forecast/${areaCode}.json`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        const today = data[0].timeSeries[0];
+        const weather = today.areas[0].weathers[0];
+
+        document.getElementById("result").textContent =
+          `${areaName}の今日の天気：\n${weather}`;
+
+      } catch (e) {
+        document.getElementById("result").textContent =
+          "天気情報の取得に失敗しました";
+        console.error(e);
+      }
+    }
+
+    // ページ読み込み時に実行
+    loadAreas();
+  </script>
+</body>
+</html>
