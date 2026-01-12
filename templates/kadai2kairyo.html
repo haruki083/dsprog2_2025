@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>天気予報アプリ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    select, input, button {
+      padding: 6px;
+      margin: 4px 0;
+    }
+    pre {
+      background: #f0f0f0;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>天気予報（気象庁API）</h1>
+
+  <label>
+    地域：
+    <select id="areaSelect"></select>
+  </label><br>
+
+  <label>
+    日付：
+    <input type="date" id="dateSelect">
+  </label><br>
+
+  <button onclick="getToday()">今日の天気</button>
+  <button onclick="getHistory()">過去の天気</button>
+
+  <pre id="result">ここに結果が表示されます</pre>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:5000";
+
+    const areaSelect = document.getElementById("areaSelect");
+    const result = document.getElementById("result");
+    const dateSelect = document.getElementById("dateSelect");
+
+    // 今日の日付を初期設定
+    dateSelect.value = new Date().toISOString().split("T")[0];
+
+    // 地域一覧
+    async function loadAreas() {
+      try {
+        const res = await fetch(
+          "https://www.jma.go.jp/bosai/common/const/area.json"
+        );
+        const data = await res.json();
+        const offices = data.offices;
+
+        for (const code in offices) {
+          const option = document.createElement("option");
+          option.value = code;
+          option.textContent = offices[code].name;
+          areaSelect.appendChild(option);
+        }
+      } catch (e) {
+        result.textContent = "地域データの取得に失敗しました";
+        console.error(e);
+      }
+    }
+
+    // 今日の天気
+    async function getToday() {
+      const area = areaSelect.value;
+      result.textContent = "取得中…";
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/weather?area=${area}`
+        );
+
+        if (!res.ok) throw new Error("API error");
+
+        const data = await res.json();
+
+        result.textContent =
+`${data.area}
+${data.date}
+${data.weather}
+（取得元：${data.source}）`;
+      } catch (e) {
+        result.textContent = "天気データ取得に失敗しました";
+        console.error(e);
+      }
+    }
+
+    // 過去の天気
+    async function getHistory() {
+      const area = areaSelect.value;
+      const date = dateSelect.value;
+
+      if (!date) {
+        result.textContent = "日付を選択してください";
+        return;
+      }
+
+      result.textContent = "取得中…";
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/history?area=${area}&date=${date}`
+        );
+
+        const data = await res.json();
+
+        if (data.error) {
+          result.textContent = "データがありません";
+        } else {
+          result.textContent =
+`${data.area}
+${data.date}
+${data.weather}`;
+        }
+      } catch (e) {
+        result.textContent = "履歴データ取得に失敗しました";
+        console.error(e);
+      }
+    }
+
+    loadAreas();
+  </script>
+</body>
+</html>
+
+
