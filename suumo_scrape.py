@@ -4,7 +4,7 @@ from io import StringIO
 import numpy as np
 import sqlite3
 
-# ===== 1. スクレイピング =====
+
 url = "https://suumo.jp/chintai/soba/tokyo/"
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
@@ -16,11 +16,11 @@ response.encoding = response.apparent_encoding
 tables = pd.read_html(StringIO(response.text))
 df = tables[0]
 
-# 必要な列だけ抽出
+
 df = df.iloc[:, [0, 2]]
 df.columns = ["区", "平均家賃（万円）"]
 
-# 欠損値処理 & 数値化
+
 df["平均家賃（万円）"] = (
     df["平均家賃（万円）"]
     .replace("-", np.nan)
