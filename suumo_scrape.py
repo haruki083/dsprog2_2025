@@ -31,13 +31,13 @@ df["平均家賃（万円）"] = (
 print("=== 取得データ ===")
 print(df)
 
-# ===== 2. SQLite に保存 =====
-conn = sqlite3.connect("rent.db")
+
+conn = sqlite3.connect("final.db")
 
 df.to_sql(
-    "tokyo_rent",      # テーブル名
+    "tokyo_rent",      
     conn,
-    if_exists="replace",  # 既存テーブルがあれば上書き
+    if_exists="replace",  
     index=False
 )
 
