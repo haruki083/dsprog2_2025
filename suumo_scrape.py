@@ -5,23 +5,23 @@ import numpy as np
 import sqlite3
 import time
 
-# ===== 設定 =====
+
 url = "https://suumo.jp/chintai/soba/tokyo/"
 headers = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
 }
 
-# ===== アクセス間隔を空ける（マナー）=====
+
 time.sleep(1)
 
-# ===== 1. スクレイピング =====
+
 response = requests.get(url, headers=headers)
 response.encoding = response.apparent_encoding
 
 tables = pd.read_html(StringIO(response.text))
 df = tables[0]
 
-# ===== 2. データ整形 =====
+
 df = df.iloc[:, [0, 2]]
 df.columns = ["区", "平均家賃（万円）"]
 
@@ -35,7 +35,7 @@ df["平均家賃（万円）"] = (
 print("=== 取得データ ===")
 print(df)
 
-# ===== 3. SQLite に保存 =====
+
 conn = sqlite3.connect("final.db")
 
 df.to_sql(
